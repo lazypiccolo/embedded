@@ -72,10 +72,11 @@ char *f2a(float value, int floating_num) {
     if (negative)value = -value;
     int int_part = (int) (value);
     int scale = 1;
-    for (int i = 0; i < floating_num; i++)scale *= 10;
+    int i;
+    for (i = 0; i < floating_num; i++)scale *= 10;
     int float_part = (int) ((value - int_part) * scale);
     int index = 18;
-    for (int i = 0; i < floating_num; i++) {
+    for (i = 0; i < floating_num; i++) {
         float_buf[index--] = float_part % 10 + '0';
         float_part /= 10;
     }
