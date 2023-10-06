@@ -24,7 +24,7 @@ int main() {
         //uart_send_data(data, 1);
         for (int i = 0; i < 10; i++) {
             //uart_send_data(data, 255);
-            char tmp = uart_read();
+            char tmp = uart_read_char();
             if (tmp) lcd_buf[6] = tmp;
 //            uart_send_char(usart_data);
 //            uart_send_char(10);
@@ -35,3 +35,4 @@ int main() {
         }
     }
 }
+

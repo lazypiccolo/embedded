@@ -191,7 +191,7 @@ void Lcd_SetRegion(uint x_start, uint y_start, uint x_end, uint y_end) {
 }
 
 
-void Lcd_SingleColour(int color) {
+inline void Lcd_SingleColour(int color) {
     uchar i, j;
     Lcd_SetRegion(0, 0, SIZE_X, SIZE_Y);
     for (i = 0; i < SIZE_Y; i++)
@@ -226,7 +226,7 @@ typedef struct {
     uchar char_gap;
 } TextStyle;
 
-void Lcd_ShowLcd1602Char(int x, int y, const uchar data, TextStyle *text_style) {
+inline void Lcd_ShowLcd1602Char(int x, int y, const uchar data, TextStyle *text_style) {
     Lcd_SetRegion(x, y, x + LCD1602WIDTH - 1 + text_style->char_gap, y + LCD1602HEIGHT);
     const char *c = lcd1602[data - ' '];
     for (int i = 0; i < LCD1602HEIGHT; i++) {
@@ -248,7 +248,7 @@ void Lcd_ShowMessage1602(char *message, uint len, int x, int y, TextStyle *text_
     }
 }
 
-void Lcd_ShowImageEncoding565(uint **image, uchar top, uchar left, uchar height, uchar width) {
+inline void Lcd_ShowImageEncoding565(uint **image, uchar top, uchar left, uchar height, uchar width) {
     Lcd_SetRegion(left, top, left + width - 1, top + height - 1);
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
@@ -258,4 +258,11 @@ void Lcd_ShowImageEncoding565(uint **image, uchar top, uchar left, uchar height,
     }
 }
 
+TextStyle default_style = {
+        .char_set = LCD1602,
+        . foreground_color = BLACK,
+        . background_color= WHITE,
+        . char_gap = 1,
+};
 #endif
+

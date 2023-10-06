@@ -1,6 +1,10 @@
+#ifndef __UART__H
+#define __UART__H
+
 #include "../../common/types.h"
 #include "../../common/stc12x56xx.h"
 #include "../timer/timer.h"
+#include "../../common/math.h"
 
 /*Define UART parity mode*/
 #define NONE_PARITY 0 //None parity
@@ -11,7 +15,10 @@
 
 #define PARITYTYPE EVEN_PARITY //Testing even parity
 
-#define UART_BUF_LEN 20
+#define UART_BUF_LEN 16
+
+#define EOL 0x0D
+
 __xdata char uart_buf[UART_BUF_LEN] = {0,};
 #if PARITYTYPE != NONE_PARITY
 __xdata char uart_RB8_buf[UART_BUF_LEN / 8 + 1] = {0};
@@ -65,25 +72,6 @@ inline void init_uart(unsigned long long baud, char parity) {
     enable_sys_interrupt(1);
 }
 
-void init_uart_mode1(uint baud) {
-    // 8bit
-    // Baud rate in mode 1 = (2^SMOD /32 ) x Timer 1 overflow rate
-    // When T1x12=0, Timer 1 overflow rate = sys_clock/12/(256-TH1);
-    // When T1x12=1, Timer 1 overflow rate = sys_clock / (256-TH1);
-
-}
-
-void init_uart_mode2() {
-    // Baud rate in mode 2 = (2^SMOD/64) x SYSclk
-
-}
-
-void init_uart_mode3(uint baud) {
-    // Baud rate in mode 3 = (2^SMOD /32 ) x Timer 1 overflow rate
-    // When T1x12=0, Timer 1 overflow rate = sys_clock/12/(256-TH1);
-    // When T1x12=1, Timer 1 overflow rate = sys_clock / (256-TH1);
-
-}
 
 void uart_send_char(char data) {
     while (busy);
@@ -98,8 +86,9 @@ void uart_send_data(char *data, uchar len) {
     }
 }
 
+// unix-like
 // not thread-safe
-char uart_read() {
+char uart_read_char() {
     if (tail == head) return 0;
     char data = uart_buf[tail];
 #if PARITYTYPE != NONE_PARITY
@@ -108,6 +97,39 @@ char uart_read() {
     tail++;
     if (tail == UART_BUF_LEN)tail = 0;
     return data;
+}
+
+// read all data OR get an EOL
+signed char uart_read_line(char *data) {
+    uchar i;
+    uchar tail_tmp = tail;
+    uchar find_end = 0;
+    for (i = 0; tail_tmp != head && !find_end; i++) {
+        data[i] = uart_buf[tail_tmp];
+        if (uart_buf[tail_tmp] == EOL) {
+            find_end = 1;
+            data[i] = 0;
+        }
+        tail_tmp++;
+        if (tail_tmp == UART_BUF_LEN) tail_tmp = 0;
+    }
+    if (find_end) {
+        tail = tail_tmp;
+        // return i-1 to ignore the EOL
+        return i - 1;
+    }
+    // did not find an EOL
+    return -1;
+}
+
+signed char uart_read_buffer(char *data, uchar len) {
+    uchar i;
+    for (i = 0; tail != head && i < len; i++) {
+        data[i] = uart_buf[tail];
+        tail++;
+        if (tail == UART_BUF_LEN) tail = 0;
+    }
+    return i;
 }
 
 void uart_interrupt()
@@ -129,3 +151,5 @@ if (head == UART_BUF_LEN)
 head = 0;
 }
 }
+#endif
+
