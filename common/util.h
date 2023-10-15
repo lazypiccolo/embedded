@@ -9,4 +9,9 @@ void delay(uint tick) {
     }
 }
 
+inline void fast_delay(uint tick) {
+    while (tick--);
+}
+
 #endif
+
